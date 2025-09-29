@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/master.swiftdeps"
+  },
+  "/Users/christian.gick/VisualStudio/AgilitonShared/.build/checkouts/swift-syntax/Sources/VersionMarkerModules/SwiftSyntax509/Empty.swift": {
+    "dependencies": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.d",
+    "object": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.swift.o",
+    "swiftmodule": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty~partial.swiftmodule",
+    "swift-dependencies": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.swiftdeps",
+    "diagnostics": "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.dia"
+  }
+}

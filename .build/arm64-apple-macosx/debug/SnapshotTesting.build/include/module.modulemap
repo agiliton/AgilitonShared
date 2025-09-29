@@ -1,0 +1,3 @@
+module SnapshotTesting {
+    header "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/SnapshotTesting.build/include/SnapshotTesting-Swift.h"
+}

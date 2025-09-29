@@ -1,0 +1,3 @@
+module IssueReportingTestSupport {
+    header "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/IssueReportingTestSupport.build/include/IssueReportingTestSupport-Swift.h"
+}

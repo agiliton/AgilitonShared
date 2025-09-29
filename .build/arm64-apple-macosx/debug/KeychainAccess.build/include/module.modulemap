@@ -1,0 +1,3 @@
+module KeychainAccess {
+    header "/Users/christian.gick/VisualStudio/AgilitonShared/.build/arm64-apple-macosx/debug/KeychainAccess.build/include/KeychainAccess-Swift.h"
+}
