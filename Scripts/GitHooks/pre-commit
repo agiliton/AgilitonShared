@@ -1,0 +1,49 @@
+#!/bin/bash
+# Agiliton Shared Pre-Commit Hook
+# Runs tests before allowing commits
+# Version: 1.0.0
+
+set -e
+
+echo "🧪 Running tests before commit..."
+
+# Detect project info
+PROJECT_NAME=$(basename "$(pwd)")
+XCODEPROJ=$(find . -maxdepth 1 -name "*.xcodeproj" -type d | head -n 1)
+SCHEME=$(basename "$XCODEPROJ" .xcodeproj)
+
+if [ -z "$XCODEPROJ" ]; then
+  echo "⚠️  No Xcode project found, skipping tests"
+  exit 0
+fi
+
+# Detect available simulators
+SIMULATOR=$(xcrun simctl list devices available | grep -E "iPhone (15|16|17) Pro" | head -n 1 | sed -E 's/.*iPhone ([0-9]+) Pro.*/iPhone \1 Pro/')
+
+if [ -z "$SIMULATOR" ]; then
+  echo "⚠️  No suitable simulator found, using default"
+  SIMULATOR="iPhone 15 Pro"
+fi
+
+echo "📱 Using simulator: $SIMULATOR"
+echo "📦 Testing project: $SCHEME"
+
+# Run tests
+xcodebuild test \
+  -project "$XCODEPROJ" \
+  -scheme "$SCHEME" \
+  -destination "platform=iOS Simulator,name=$SIMULATOR" \
+  -quiet \
+  2>&1 | grep -E "Test Suite|passed|failed" || true
+
+EXIT_CODE=${PIPESTATUS[0]}
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ Tests failed. Commit aborted."
+  echo "💡 Fix failing tests or skip with: git commit --no-verify"
+  exit 1
+fi
+
+echo "✅ All tests passed!"
+exit 0
