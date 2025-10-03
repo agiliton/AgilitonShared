@@ -5,16 +5,20 @@
 module AgilitonTestFlight
   # Standard export options for all Agiliton macOS apps
   # CRITICAL: ITSAppUsesNonExemptEncryption must be false for our apps
+  # CRITICAL: Must use Apple Distribution certificate for App Store
   def self.export_options(team_id: "4S7KX75F3B")
     {
       ITSAppUsesNonExemptEncryption: false,
       manageAppVersionAndBuildNumber: false,
       teamID: team_id,
-      method: "app-store"
+      method: "app-store",
+      signingStyle: "manual",
+      signingCertificate: "Apple Distribution"
     }
   end
 
   # Standard gym (xcodebuild) configuration
+  # CRITICAL: Must specify Apple Distribution codesigning identity
   def self.gym_config(
     scheme:,
     output_directory: "./build",
@@ -22,11 +26,13 @@ module AgilitonTestFlight
     derived_data_path: "./DerivedData",
     project: nil,
     workspace: nil,
-    installer_cert_name: "3rd Party Mac Developer Installer: Agiliton Ltd. (4S7KX75F3B)"
+    installer_cert_name: "3rd Party Mac Developer Installer: Agiliton Ltd. (4S7KX75F3B)",
+    codesigning_identity: "Apple Distribution: Christian Gick (4S7KX75F3B)"
   )
     config = {
       scheme: scheme,
       export_method: "app-store",
+      codesigning_identity: codesigning_identity,
       export_options: export_options,
       configuration: "Release",
       output_directory: output_directory,
