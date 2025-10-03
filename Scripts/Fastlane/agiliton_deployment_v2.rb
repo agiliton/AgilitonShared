@@ -11,6 +11,7 @@
 require 'fileutils'
 require 'json'
 require_relative 'shared_config'
+require_relative 'error_handling'
 
 module AgilitonDeployment
   class << self
@@ -124,8 +125,20 @@ module AgilitonDeployment
           "3rd Party Mac Developer Installer: #{AgilitonConfig::TEAM_NAME} (#{AgilitonConfig::TEAM_ID})"
       end
 
-      # Build using Fastlane's gym action
-      result = Actions::GymAction.run(gym_options)
+      # Build using Fastlane's gym action with retry logic
+      result = AgilitonErrorHandler.with_retry(action_name: "Build #{scheme}") do
+        gym(
+          scheme: gym_options[:scheme],
+          export_method: gym_options[:export_method],
+          configuration: gym_options[:configuration],
+          output_directory: gym_options[:output_directory],
+          build_path: gym_options[:build_path],
+          derived_data_path: gym_options[:derived_data_path],
+          clean: gym_options[:clean],
+          silent: gym_options[:silent],
+          export_options: gym_options[:export_options]
+        )
+      end
 
       # Verify output exists
       pkg_path = Dir.glob(File.join(build_dir, "*.pkg")).first
@@ -170,18 +183,20 @@ module AgilitonDeployment
       UI.message("Version: #{version_info[:version]}, Build: #{version_info[:build]}")
 
       begin
-        # Call the actual Fastlane upload_to_testflight action
-        upload_result = Actions::UploadToTestflightAction.run(
-          api_key: api_key,
-          app_identifier: app_identifier,
-          pkg: pkg_path,
-          ipa: ipa_path,
-          uses_non_exempt_encryption: false,
-          skip_waiting_for_build_processing: !wait_for_processing,
-          wait_for_uploaded_build: wait_for_processing,
-          distribute_external: false,  # Handle separately for better control
-          changelog: changelog
-        )
+        # Call the actual Fastlane upload_to_testflight action with retry
+        upload_result = AgilitonErrorHandler.with_retry(action_name: "Upload to TestFlight", max_retries: 5) do
+          upload_to_testflight(
+            api_key: api_key,
+            app_identifier: app_identifier,
+            pkg: pkg_path,
+            ipa: ipa_path,
+            uses_non_exempt_encryption: false,
+            skip_waiting_for_build_processing: !wait_for_processing,
+            wait_for_uploaded_build: wait_for_processing,
+            distribute_external: false,  # Handle separately for better control
+            changelog: changelog
+          )
+        end
 
         # Verify upload succeeded by checking logs
         sleep(2)  # Give altool time to write logs
@@ -277,7 +292,7 @@ module AgilitonDeployment
       UI.header("👥 Distributing to tester groups")
 
       begin
-        Actions::PilotAction.run(
+        pilot(
           api_key: api_key,
           app_identifier: app_identifier,
           distribute_only: true,
@@ -310,6 +325,13 @@ module AgilitonDeployment
       UI.message("Scheme: #{scheme}")
       UI.message("App: #{app_identifier}")
 
+      # Validate inputs
+      AgilitonErrorHandler.validate_inputs(
+        xcodeproj: xcodeproj,
+        scheme: scheme,
+        app_identifier: app_identifier
+      )
+
       project_root = File.dirname(xcodeproj)
 
       # Step 1: Cleanup
@@ -321,7 +343,7 @@ module AgilitonDeployment
       # Step 3: Increment build if needed
       if increment_build
         UI.message("Incrementing build number...")
-        Actions::IncrementBuildNumberAction.run(xcodeproj: xcodeproj)
+        increment_build_number(xcodeproj: xcodeproj)
       end
 
       # Step 4: Verify build number
